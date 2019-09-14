@@ -8,6 +8,8 @@ const styles = {
     height: '96vh'
   }
 };
+const ARROW_LEFT = 37;
+const ARROW_RIGHT = 39;
 class Game extends Component {
   constructor(props) {
     super(props);
@@ -24,6 +26,41 @@ class Game extends Component {
       activeColumn: 1
     };
   }
+  handleKeyDown = (event) => {
+    debugger;
+    switch (event.keyCode) {
+      case ARROW_LEFT:
+        this.moveSelectedColumnLeft();
+        break;
+      case ARROW_RIGHT:
+        this.moveSelectedColumnRight();
+        break;
+      default:
+        break;
+    }
+  }
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false);
+  }
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false);
+  }
+  moveSelectedColumnLeft() {
+    const { activeColumn } = this.state;
+    if (activeColumn > 1) {
+      this.setState({ activeColumn: activeColumn - 1 })
+    }
+  }
+  moveSelectedColumnRight() {
+    const { activeColumn } = this.state;
+    if (activeColumn < 7) {
+      this.setState({ activeColumn: activeColumn + 1 })
+    }
+  }
+  selectColumn = (num) => {
+    debugger;
+    this.setState({ activeColumn: num });
+  }
   render() {
     const { currentPlayer, boardMatrix, activeColumn } = this.state;
     const { classes } = this.props;
@@ -32,7 +69,7 @@ class Game extends Component {
         <header className="App-header w-100">
           Current player: {currentPlayer}
         </header>
-        <Board boardMatrix={boardMatrix} activeColumn={activeColumn} />
+        <Board boardMatrix={boardMatrix} activeColumn={activeColumn} onColumnClick={this.selectColumn} />
       </div>
     );
   }
