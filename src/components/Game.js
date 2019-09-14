@@ -27,7 +27,6 @@ class Game extends Component {
     };
   }
   handleKeyDown = (event) => {
-    debugger;
     switch (event.keyCode) {
       case ARROW_LEFT:
         this.moveSelectedColumnLeft();
@@ -58,7 +57,6 @@ class Game extends Component {
     }
   }
   selectColumn = (num) => {
-    debugger;
     this.setState({ activeColumn: num });
   }
   render() {

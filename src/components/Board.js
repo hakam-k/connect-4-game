@@ -32,7 +32,6 @@ const styles = {
 class Board extends Component {
   render() {
     const { classes, boardMatrix, activeColumn, onColumnClick } = this.props;
-    // const classes = style(this.props);
     return (
       <div className={cn('board d-flex flex-row flex-justify-space-evenly', classes.board)}>
         {boardMatrix.map((arr, i) => {
