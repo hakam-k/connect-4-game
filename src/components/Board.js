@@ -31,11 +31,11 @@ const styles = {
 };
 class Board extends Component {
   render() {
-    const { classes, boardMatrix, activeColumn, onColumnClick } = this.props;
+    const { classes, boardMatrix, activeColumn, onColumnClick, pushCoinToColumn } = this.props;
     return (
       <div className={cn('board d-flex flex-row flex-justify-space-evenly', classes.board)}>
         {boardMatrix.map((arr, i) => {
-          return <div onClick={() => { onColumnClick(i + 1) }} className={cn('d-flex flex-column flex-justify-space-evenly', classes.column, { selected: i === activeColumn - 1 })}>{arr.map((v) => {
+          return <div onClick={() => { onColumnClick(i + 1); pushCoinToColumn(i+1) }} className={cn('d-flex flex-column flex-justify-space-evenly', classes.column, { selected: i === activeColumn - 1 })}>{arr.map((v) => {
             return <Coin colorIndex={v} />
           })}
           </div>
