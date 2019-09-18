@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import Board from './Board';
 import withStyles from 'react-jss';
 import cn from 'classnames';
-import { Button } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label } from 'reactstrap';
+import { get } from 'lodash';
+import { getMatrixColumns, check4ConnectedInArray, getDiagonalArrays, getReversedMatrix } from './utils';
 
 const styles = {
   game: {
@@ -28,7 +30,11 @@ class Game extends Component {
         [0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0]
       ],
-      activeColumn: 1
+      activeColumn: 1,
+      modal: false,
+      winner: 0,
+      player1: 'player 1',
+      player2: 'player 2'
     }
   }
   resetGame = () => {
@@ -52,7 +58,7 @@ class Game extends Component {
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown, false);
   }
-  componentWillUnmount() {
+  componentDidUnmount() {
     document.removeEventListener("keydown", this.handleKeyDown, false);
   }
   moveSelectedColumnLeft() {
@@ -79,7 +85,6 @@ class Game extends Component {
       return;
     }
     newCurrentColumn = newCurrentColumn.reduce((result, value, i) => {
-      debugger;
       let val = value;
       if (value !== 0 && result[i - 1] === 0) {
         result[i - 1] = currentPlayer;
@@ -91,29 +96,72 @@ class Game extends Component {
       return result;
     }, []);
     matrix[column - 1] = newCurrentColumn;
-    this.setState({ currentPlayer: (currentPlayer % 2) + 1, boardMatrix: matrix });
+    this.setState({ currentPlayer: (currentPlayer % 2) + 1, boardMatrix: matrix }, this.runWinnerCheck);
   }
   runWinnerCheck = () => {
-    const { boardMatrix, currentPlayer } = this.state;
-    if(currentPlayer === 1){
-      console.log('Player 1 win ?' + this.checkIfFirstPlayerWin());
-    }
-    if(currentPlayer === 2){
-      console.log('Player 2 win ?' + this.checkIfSecondPlayerWin());
+    const { boardMatrix } = this.state;
+    const reversedMatrix = getMatrixColumns(boardMatrix);
+    const diagonals = getDiagonalArrays(boardMatrix);
+    const reversedDiagonals = getDiagonalArrays(getReversedMatrix(boardMatrix));
+
+    this.loopOverCheck4Connected(boardMatrix);
+    this.loopOverCheck4Connected(reversedMatrix);
+    this.loopOverCheck4Connected(diagonals);
+    this.loopOverCheck4Connected(reversedDiagonals);
+  }
+  loopOverCheck4Connected = (matrix) => {
+    for (let i = 0; i < matrix.length; i++) {
+      const winner = check4ConnectedInArray(matrix[i]);
+      if (winner === 1) { console.log('The winner is: 1'); this.toggleModal(1); };
+      if (winner === 2) { console.log('The winner is: 2'); this.toggleModal(2); };
     }
   }
-  checkIfFirstPlayerWin = (col = 0, y = 0, counter = 0)=>{
-    const { boardMatrix } = this.state;
-    if(boardMatrix){}
+  toggleModal = (winner = 0) => {
+    this.setState(prevState => ({
+      modal: !prevState.modal,
+      winner
+    }));
+  }
+  setStateForField = (field, value) => {
+    this.setState(() => ({
+      [field]: value,
+    }));
+  }
+  updatePlayer1Field = (e)=>{
+    this.setStateForField('player1', get(e, 'target.value'));
+  }
+  updatePlayer2Field = (e)=>{
+    this.setStateForField('player2', get(e, 'target.value'));
   }
   render() {
-    const { currentPlayer, boardMatrix, activeColumn } = this.state;
+    const { currentPlayer, boardMatrix, activeColumn, modal, winner, player1, player2 } = this.state;
     const { classes } = this.props;
+    const playerName =  winner === 1 ? player1: player2;
     return (
       <div className={cn("game d-flex flex-column flex-center", classes.game)}>
         <header className="App-header w-100 mb-5">
-          Current player: <span className={cn({ "text-danger": currentPlayer === 1 }, { "text-warning": currentPlayer === 2 })}>{currentPlayer}</span>
+          <div className="d-flex flex-row">
+            <div className="d-flex flex-column mr-5">
+              <Label for="player1" sm={2}>Player 1</Label>
+              <Input type="text" name="player1" id="player1" placeholder="Select name" defaultValue="player 1" onChange={this.updatePlayer1Field} />
+            </div>
+            <div className="d-flex flex-column">
+              <Label for="player2" sm={2}>Player 2</Label>
+              <Input type="text" name="player2" id="player2" placeholder="Select name" defaultValue="player 2" onChange={this.updatePlayer2Field}/>
+            </div>
+          </div>
+          Current player: <span className={cn({ "text-danger": currentPlayer === 1 }, { "text-warning": currentPlayer === 2 })}>{playerName}</span>
           <Button color="info" onClick={this.resetGame}>Play Again</Button>
+          <Modal isOpen={modal} toggle={this.toggleModal}>
+            <ModalHeader toggle={this.toggleModal}>Game over</ModalHeader>
+            <ModalBody>
+              The winner is: {playerName}
+            </ModalBody>
+            <ModalFooter>
+              <Button color="primary" onClick={this.resetGame}>Play again</Button>
+              <Button color="secondary" onClick={this.toggleModal}>Cancel</Button>
+            </ModalFooter>
+          </Modal>
           <h6 className="mt-3">You can use keyboard arrows in order select column and hit enter to drop coin on it</h6>
           <h6 className="">or use mouse to click on any column and coin will be dropped into this column</h6>
         </header>
