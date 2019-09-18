@@ -112,13 +112,23 @@ class Game extends Component {
   loopOverCheck4Connected = (matrix) => {
     for (let i = 0; i < matrix.length; i++) {
       const winner = check4ConnectedInArray(matrix[i]);
-      if (winner === 1) { console.log('The winner is: 1'); this.toggleModal(1); };
-      if (winner === 2) { console.log('The winner is: 2'); this.toggleModal(2); };
+      if (winner === 1) {
+        this.setWinner(1);
+      };
+      if (winner === 2) {
+        this.setWinner(2);
+      };
     }
   }
-  toggleModal = (winner = 0) => {
+  toggleModal = () => {
     this.setState(prevState => ({
       modal: !prevState.modal,
+    }));
+    this.resetGame();
+  }
+  setWinner = (winner = 0) => {
+    this.setState(() => ({
+      modal: true,
       winner
     }));
   }
@@ -127,16 +137,17 @@ class Game extends Component {
       [field]: value,
     }));
   }
-  updatePlayer1Field = (e)=>{
+  updatePlayer1Field = (e) => {
     this.setStateForField('player1', get(e, 'target.value'));
   }
-  updatePlayer2Field = (e)=>{
+  updatePlayer2Field = (e) => {
     this.setStateForField('player2', get(e, 'target.value'));
   }
   render() {
     const { currentPlayer, boardMatrix, activeColumn, modal, winner, player1, player2 } = this.state;
     const { classes } = this.props;
-    const playerName =  winner === 1 ? player1: player2;
+    const playerName = currentPlayer === 1 ? player1 : player2;
+    const winnerName = winner === 1 ? player1 : player2;
     return (
       <div className={cn("game d-flex flex-column flex-center", classes.game)}>
         <header className="App-header w-100 mb-5">
@@ -147,7 +158,7 @@ class Game extends Component {
             </div>
             <div className="d-flex flex-column">
               <Label for="player2" sm={2}>Player 2</Label>
-              <Input type="text" name="player2" id="player2" placeholder="Select name" defaultValue="player 2" onChange={this.updatePlayer2Field}/>
+              <Input type="text" name="player2" id="player2" placeholder="Select name" defaultValue="player 2" onChange={this.updatePlayer2Field} />
             </div>
           </div>
           Current player: <span className={cn({ "text-danger": currentPlayer === 1 }, { "text-warning": currentPlayer === 2 })}>{playerName}</span>
@@ -155,7 +166,7 @@ class Game extends Component {
           <Modal isOpen={modal} toggle={this.toggleModal}>
             <ModalHeader toggle={this.toggleModal}>Game over</ModalHeader>
             <ModalBody>
-              The winner is: {playerName}
+              The winner is: {winnerName}
             </ModalBody>
             <ModalFooter>
               <Button color="primary" onClick={this.resetGame}>Play again</Button>
